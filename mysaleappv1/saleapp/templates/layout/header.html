@@ -1,0 +1,27 @@
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+  <!-- Brand -->
+  <a class="navbar-brand" href="#">E-commerce Website</a>
+
+  <!-- Toggler/collapsibe Button -->
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Navbar links -->
+  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav">
+      <li class="nav-item {% if 'category_id' not in request.args %}active{% endif %}">
+        <a class="nav-link" href="/">Trang chu</a>
+      </li>
+      {% for c in categories %}
+      <li class="nav-item {% if 'category_id' in request.args and c.id==request.args.category_id|int %}active{% endif %} ">
+        <a class="nav-link" href="{{ url_for('home', category_id=c.id) }}">{{ c.name }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <form class="form-inline">
+    <input class="form-control mr-sm-2" type="text" name="keyword" placeholder="Nhap tu khoa...">
+    <button class="btn btn-success" type="submit">Tim kiem</button>
+  </form>
+</nav>

@@ -1,0 +1,29 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+{% if current_user.is_authenticated %}
+<h1>WELCOME <span class="text-danger">{{ current_user.name }}</span> TO ADMINISTRATION PAGE!!!</h1>
+{% else %}
+<h1 class="text-center text-danger">DANG NHAP</h1>
+<form method="post" action="{{ url_for('admin_login') }}">
+  <div class="form-group">
+    <label for="username">Username:</label>
+    <input type="text"
+           class="form-control"
+           name="username"
+           placeholder="Enter username"
+           id="username">
+  </div>
+  <div class="form-group">
+    <label for="pwd">Password:</label>
+    <input type="password"
+           name="password"
+           class="form-control"
+           placeholder="Enter password"
+           id="pwd">
+  </div>
+  <button type="submit" class="btn btn-primary">Dang nhap</button>
+</form>
+
+{% endif %}
+{% endblock %}
