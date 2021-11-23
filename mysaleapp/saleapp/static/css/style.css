@@ -1,0 +1,21 @@
+* {
+    font-family: Tahoma;
+}
+
+h1.subject {
+    text-align:center;
+}
+
+table.product {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.flex {
+    display: flex;
+}

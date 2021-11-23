@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sach san pham</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="subject">DANH MUC SAN PHAM</h1>
+
+    <hr>
+
+    <form>
+      <input type="text" name="keyword" placeholder="Nhap tu khoa muon tim..." />
+      <input type="number" name="from_price" placeholder="Nhap gia bat dau..." />
+      <input type="number" name="to_price" placeholder="Nhap gia ket thuc..." />
+      <input type="submit" value="Tim" />
+    </form>
+
+    <hr>
+    {% if products %}
+    <table border="1" class="product" width="100%">
+      <tr>
+        <th></th>
+        <th>Ma san pham</th>
+        <th>Ten san pham</th>
+        <th>Mo ta</th>
+        <th>Gia ban</th>
+      </tr>
+      {% for p in products %}
+      <tr>
+        <td>
+          <a href="{{ url_for('product_detail', product_id=p.id) }}">
+            <img src="{{ url_for('static', filename=p.image) }}" width="120" alt="{{ p.name }}" />
+          </a>
+        </td>
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}</td>
+        <td>{{ p.description }}</td>
+        <td>{{ "{:,.1f}".format(p.price) }} VND</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p><i>Khong co san pham nao!!!</i></p>
+    {% endif %}
+  </div>
+</body>
+</html>
