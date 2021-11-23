@@ -32,8 +32,7 @@ def load_products(cate_id=None, kw=None, from_price=None, to_price=None, page=1)
     page_size = app.config['PAGE_SIZE']
     start = (page - 1) * page_size
 
-    return products.all()[start:start + page_size]
-
+    return products.slice(start, start+page_size).all()
 
 def count_products():
     return Product.query.filter(Product.active.__eq__(True)).count()
