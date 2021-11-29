@@ -3,6 +3,69 @@
 {% block body %}
 {% if current_user.is_authenticated %}
 <h1>WELCOME <span class="text-danger">{{ current_user.name }}</span> TO ADMINISTRATION PAGE!!!</h1>
+
+<div class="row">
+  <div class="col-md-5 col-xs-12">
+    <table class="table">
+      <tr>
+        <td>Ma danh muc</td>
+        <td>Ten danh muc</td>
+        <td>So san pham</td>
+      </tr>
+      {% for s in stats %}
+      <tr>
+        <td>{{ s[0].id }}</td>
+        <td>{{ s[0].name }}</td>
+        <td>{{ s[1] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="col-md-7 col-xs-12">
+    <canvas id="myCateChart" width="400" height="400"></canvas>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let labels=[], counter=[], colors=[], borderColors=[]
+  {% for s in stats %}
+    labels.push('{{ s[0].name }}')
+    counter.push({{ s[1] }})
+
+    r = parseInt(Math.random()*255)
+    g = parseInt(Math.random()*255)
+    b = parseInt(Math.random()*255)
+    colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
+    borderColors.push(`rgba(${r}, {g}, ${b}, 1)`)
+  {% endfor %}
+
+  window.onload = function() {
+    const ctx = document.getElementById('myCateChart').getContext('2d')
+    const myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Thong ke so san pham theo danh muc',
+                data: counter,
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+  }
+</script>
+
 {% else %}
 <h1 class="text-center text-danger">DANG NHAP</h1>
 <form method="post" action="{{ url_for('admin_login') }}">
@@ -24,6 +87,5 @@
   </div>
   <button type="submit" class="btn btn-primary">Dang nhap</button>
 </form>
-
 {% endif %}
 {% endblock %}

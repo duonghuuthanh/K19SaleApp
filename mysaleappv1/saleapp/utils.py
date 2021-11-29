@@ -1,6 +1,7 @@
 import json, os
-from saleapp import app
+from saleapp import app, db
 from saleapp.models import Category, Product, User
+from sqlalchemy import func
 import hashlib
 
 
@@ -32,7 +33,7 @@ def load_products(kw=None, from_price=None, to_price=None, cate_id=None, page=1)
     page_size = app.config['PAGE_SIZE']
     start = (page - 1) * page_size
 
-    return products.all()[start:start + page_size]
+    return products.slice(start, start + page_size).all()
 
 
 def get_product_by_id(product_id):
@@ -53,3 +54,32 @@ def check_user(username, password):
 
         return User.query.filter(User.username.__eq__(username.strip()),
                                  User.password.__eq__(password)).first()
+
+
+def add_user(name, username, password, **kwargs):
+    password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
+
+    user = User(name=name.strip(),
+                username=username.strip(),
+                password=password,
+                email=kwargs.get('email'),
+                avatar=kwargs.get('avatar'))
+
+    db.session.add(user)
+    db.session.commit()
+
+
+def cate_stats():
+    return Category.query.join(Product,
+                               Product.category_id.__eq__(Category.id),
+                               isouter=True)\
+                    .add_columns(func.count(Product.id))\
+                    .group_by(Category.id).all()
+
+
+def cate_stats2():
+    return db.session.query(Category.id, Category.name, func.count(Product.id))\
+        .join(Product, Product.category_id.__eq__(Category.id), isouter=True)\
+        .group_by(Category.id, Category.name).all()
+
+

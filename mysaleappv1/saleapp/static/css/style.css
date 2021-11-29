@@ -6,11 +6,6 @@ h1.subject {
     text-align:center;
 }
 
-body {
-    background-color: lightblue;
-    color: darkblue;
-}
-
 table.product {
     border-collapse: collapse;
     width: 100%;

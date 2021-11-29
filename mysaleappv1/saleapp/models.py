@@ -24,6 +24,7 @@ class User(BaseModel, UserMixin):
     email = Column(String(50))
     active = Column(Boolean, default=True)
     joined_date = Column(DateTime, default=datetime.now())
+    avatar = Column(String(100), default='images/default.png')
     user_role = Column(Enum(UserRole), default=UserRole.USER)
 
     def __str__(self):

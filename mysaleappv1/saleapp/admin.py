@@ -1,9 +1,9 @@
 from saleapp.models import Category, Product, User, UserRole
 from flask_admin.contrib.sqla import ModelView
-from flask_admin import BaseView, expose
+from flask_admin import BaseView, expose, Admin, AdminIndexView
 from flask_login import logout_user, current_user
 from flask import redirect
-from saleapp import admin, db
+from saleapp import db, app, utils
 
 
 class AdminAutheticatedView(ModelView):
@@ -25,8 +25,20 @@ class LogoutView(BaseView):
         return redirect('/admin')
 
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
+        return current_user.is_authenticated
 
+
+class MyAdminIndexView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        stats = utils.cate_stats()
+        return self.render('admin/index.html', stats=stats)
+
+
+admin = Admin(app=app,
+              name='QUẢN TRỊ HÀNG TRỰC TUYẾN',
+              template_mode='bootstrap4',
+              index_view=MyAdminIndexView())
 
 admin.add_view(AdminAutheticatedView(Category, db.session, name="Danh mục"))
 admin.add_view(ProductView(Product, db.session, name="Sản phẩm"))
