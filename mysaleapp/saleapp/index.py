@@ -1,9 +1,10 @@
 import math
-from flask import render_template, request, redirect, url_for
-from flask_login import login_user, logout_user
+from flask import render_template, request, redirect, url_for, session, jsonify
+from flask_login import login_user, logout_user, login_required
 from saleapp import app, login
 import utils
 import cloudinary.uploader
+from saleapp.models import UserRole
 
 
 @app.route("/")
@@ -62,7 +63,8 @@ def signin():
             if user:
                 login_user(user=user)
 
-                return redirect("/")
+                next = request.args.get('next', 'home')
+                return redirect(url_for(next))
             else:
                 error_msg = "Chuong trinh dang co loi! Vui long quay lai sau!"
 
@@ -72,11 +74,28 @@ def signin():
     return render_template('login.html', error_msg=error_msg)
 
 
+@app.route('/admin-login', methods=['post'])
+def signin_admin():
+    username = request.form['username']
+    password = request.form['password']
+
+    user = utils.check_user(username=username,
+                            password=password,
+                            role=UserRole.ADMIN)
+    if user:
+        login_user(user=user)
+
+    return redirect('/admin')
+
+
+
+
 @app.route('/logout')
 def signout():
     logout_user()
 
     return redirect(url_for('signin'))
+
 
 @app.route("/products")
 def product_list():
@@ -102,10 +121,55 @@ def product_detail(product_id):
                            product=product)
 
 
+@app.route('/cart')
+def cart():
+    return render_template('cart.html',
+                           stats=utils.count_cart(session.get('cart')))
+
+
+@app.route('/api/add-cart', methods=['post'])
+def add_to_cart():
+    data = request.json
+    id = str(data.get('id'))
+    name = data.get('name')
+    price = data.get('price')
+
+    cart = session.get('cart')
+    if not cart:
+        cart = {}
+
+    if id in cart:
+        cart[id]['quantity'] = cart[id]['quantity'] + 1
+    else:
+        cart[id] = {
+            'id': id,
+            'name': name,
+            'price': price,
+            'quantity': 1
+        }
+
+    session['cart'] = cart
+
+    return jsonify(utils.count_cart(cart))
+
+
+@app.route('/api/pay', methods=['post'])
+@login_required
+def pay():
+    try:
+        utils.add_receipt(session.get('cart'))
+        del session['cart']
+    except:
+        return jsonify({'code': 400})
+
+    return jsonify({'code': 200})
+
+
 @app.context_processor
-def common_reponse():
+def common_response():
     return {
-        'categories': utils.load_categories()
+        'categories': utils.load_categories(),
+        'cart_stats': utils.count_cart(session.get('cart'))
     }
 
 

@@ -3,7 +3,7 @@
 {% block title %}Trang chu{% endblock %}
 
 {% block content %}
-<h1 class="subject">CHAO MUNG CAC BAN DEN WEBSITE BAN HANG TRUC TUYEN!!!</h1>
+<h1 class="subject">BAN HANG TRUC TUYEN</h1>
 
 
 
@@ -25,7 +25,7 @@
           <div class="card-body">
             <h4 class="card-title">{{ p.name }}</h4>
             <p class="card-text">{{ "{:,.1f}".format(p.price) }} VND</p>
-            <a href="#" class="btn btn-primary">Dat hang</a>
+            <a href="#" class="btn btn-primary" onclick="addToCart({{ p.id }}, '{{ p.name }}', {{ p.price }})">Dat hang</a>
           </div>
         </div>
     </div>
