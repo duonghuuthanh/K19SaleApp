@@ -43,6 +43,11 @@
         <a class="nav-link text-success" href="{{ url_for('user_signin') }}">Dang nhap</a>
       </li>
       {% endif %}
+      <li class="nav-item">
+        <a class="nav-link text-success" href="{{ url_for('cart') }}">
+          Gio hang <span class="badge badge-info" id="cartCounter">{{ cart_stats.total_quantity }}</span>
+        </a>
+      </li>
     </ul>
   </div>
    <form class="form-inline">

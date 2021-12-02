@@ -1,6 +1,7 @@
 import json, os
 from saleapp import app, db
-from saleapp.models import Category, Product, User
+from saleapp.models import Category, Product, User, Receipt, ReceiptDetail
+from flask_login import current_user
 import hashlib
 
 
@@ -62,3 +63,32 @@ def check_login(username, password):
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
+
+
+def cart_stats(cart):
+    total_quantity, total_amount = 0, 0
+
+    if cart:
+        for c in cart.values():
+            total_quantity += c['quantity']
+            total_amount += c['quantity'] * c['price']
+
+    return {
+        'total_quantity': total_quantity,
+        'total_amount': total_amount
+    }
+
+
+def add_receipt(cart):
+    if cart:
+        receipt = Receipt(user=current_user)
+        db.session.add(receipt)
+
+        for c in cart.values():
+            d = ReceiptDetail(receipt=receipt,
+                              product_id=c['id'],
+                              quantity=c['quantity'],
+                              unit_price=c['price'])
+            db.session.add(d)
+
+        db.session.commit()
