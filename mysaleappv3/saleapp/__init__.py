@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_admin import Admin
 from flask_login import LoginManager
 import cloudinary
 
@@ -11,8 +10,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['PAGE_SIZE'] = 8
 
 db = SQLAlchemy(app=app)
-
-admin = Admin(app=app, name="IT03's E-commerce Online", template_mode='bootstrap4')
 
 cloudinary.config(
     cloud_name='dxxwcby8l',

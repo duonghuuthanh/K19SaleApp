@@ -3,7 +3,7 @@
 {% block title %}Gio hang{% endblock %}
 
 {% block content %}
-<h1 class="text-center text-danger">GIO HANG</h1>
+<h1 class="text-center text-info">GIO HANG</h1>
 
 {% if 'cart' in session and session['cart'] %}
 <table class="table">
@@ -12,29 +12,43 @@
         <th>Ten san pham</th>
         <th>Don gia</th>
         <th>So luong</th>
+        <th></th>
     </tr>
     {% for c in session['cart'].values() %}
-    <tr>
+    <tr id="product{{ c.id }}">
         <td>{{ c.id }}</td>
         <td>{{ c.name }}</td>
         <td>{{ c.price }}</td>
-        <td>{{ c.quantity }}</td>
+        <td>
+            <div class="form-group">
+                <input type="number"
+                       onblur="updateCart(this, {{ c.id }})"
+                       class="form-control"
+                       value="{{ c.quantity }}"  />
+            </div>
+        </td>
+        <td>
+            <input type="button"
+                   onclick="deleteCart({{ c.id }})"
+                   value="Xoa"
+                   class="btn btn-danger" />
+        </td>
     </tr>
     {% endfor %}
 </table>
 
 <div class="alert alert-info">
-    <h5>Tong san pham: {{ stats.total_quantity }}</h5>
-    <h5>Tong tien: {{ "{:,.1f}".format(stats.total_amount) }} VND</h5>
+    <h5>Tong san pham: <span id="cartCounter2">{{ cart_stats.total_quantity }}</span></h5>
+    <h5>Tong tien: <span id="cartAmount">{{ "{:,.1f}".format(cart_stats.total_amount) }}</span> VND</h5>
 </div>
 
 {% if current_user.is_authenticated %}
-<input type="button" value="Thanh toan" class="btn btn-danger" onclick="pay()" />
+<input type="button" value="Thanh toan" onclick="pay()" class="btn btn-danger" />
 {% else %}
-<a href="{{ url_for('signin', next='cart') }}">Dang nhap de thanh toan...</a>
+<a href="{{ url_for('user_signin', next='cart') }}">Vui long dang nhap de thanh toan</a>
 {% endif %}
 <br><br>
 {% else %}
-<p><i>Khong co san pham nao trong gio!!!</i></p>
+<p><i>Khong co san pham trong gio!!!</i></p>
 {% endif %}
 {% endblock %}

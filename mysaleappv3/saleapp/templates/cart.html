@@ -12,20 +12,34 @@
         <th>Ten san pham</th>
         <th>Don gia</th>
         <th>So luong</th>
+        <th></th>
     </tr>
     {% for c in session['cart'].values() %}
-    <tr>
+    <tr id="product{{ c.id }}">
         <td>{{ c.id }}</td>
         <td>{{ c.name }}</td>
         <td>{{ c.price }}</td>
-        <td>{{ c.quantity }}</td>
+        <td>
+            <div class="form-group">
+                <input type="number"
+                       onblur="updateCart(this, {{ c.id }})"
+                       class="form-control"
+                       value="{{ c.quantity }}"  />
+            </div>
+        </td>
+        <td>
+            <input type="button"
+                   onclick="deleteCart({{ c.id }})"
+                   value="Xoa"
+                   class="btn btn-danger" />
+        </td>
     </tr>
     {% endfor %}
 </table>
 
 <div class="alert alert-info">
-    <h5>Tong san pham: {{ cart_stats.total_quantity }}</h5>
-    <h5>Tong tien: {{ "{:,.1f}".format(cart_stats.total_amount) }} VND</h5>
+    <h5>Tong san pham: <span id="cartCounter2">{{ cart_stats.total_quantity }}</span></h5>
+    <h5>Tong tien: <span id="cartAmount">{{ "{:,.1f}".format(cart_stats.total_amount) }}</span> VND</h5>
 </div>
 
 {% if current_user.is_authenticated %}

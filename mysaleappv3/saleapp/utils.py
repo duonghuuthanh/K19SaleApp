@@ -2,10 +2,13 @@ import json, os
 from saleapp import app, db
 from saleapp.models import Category, Product, User, Receipt, ReceiptDetail
 from flask_login import current_user
+from sqlalchemy import func
+from sqlalchemy.sql import extract
 import hashlib
 
 
 def read_json(path):
+
     with open(path) as f:
         return json.load(f)
 
@@ -92,3 +95,50 @@ def add_receipt(cart):
             db.session.add(d)
 
         db.session.commit()
+
+
+def category_stats():
+    """
+    SELECT c.id, c.name, count(p.id)
+    FROM category c left outer join product p on c.id = p.category_id
+    group by c.id, c.name
+    """
+    # return Category.query.join(Product,
+    #                            Product.category_id.__eq__(Category.id), isouter=True)\
+    #                .add_columns(func.count(Product.id))\
+    #                .group_by(Category.id, Category.name).all()
+
+    return db.session.query(Category.id, Category.name,
+                            func.count(Product.id))\
+                     .join(Product,
+                           Product.category_id.__eq__(Category.id),
+                           isouter=True)\
+                     .group_by(Category.id, Category.name).all()
+
+
+def product_stats(kw=None, from_date=None, to_date=None):
+    p = db.session.query(Product.id, Product.name,
+                         func.sum(ReceiptDetail.quantity * ReceiptDetail.unit_price))\
+                  .join(ReceiptDetail, ReceiptDetail.product_id.__eq__(Product.id), isouter=True)\
+                  .join(Receipt, Receipt.id.__eq__(ReceiptDetail.receipt_id))\
+                  .group_by(Product.id, Product.name)
+
+    if kw:
+        p = p.filter(Product.name.contains(kw))
+
+    if from_date:
+        p = p.filter(Receipt.created_date.__ge__(from_date))
+
+    if to_date:
+        p = p.filter(Receipt.created_date.__le__(to_date))
+
+    return p.all()
+
+
+def product_month_stats(year):
+    return db.session.query(extract('month', Receipt.created_date),
+                            func.sum(ReceiptDetail.quantity*ReceiptDetail.unit_price))\
+                     .join(ReceiptDetail, ReceiptDetail.receipt_id.__eq__(Receipt.id))\
+                     .filter(extract('year', Receipt.created_date) == year)\
+                     .group_by(extract('month', Receipt.created_date))\
+                     .order_by(extract('month', Receipt.created_date)).all()

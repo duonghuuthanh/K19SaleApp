@@ -6,6 +6,7 @@ import utils
 import cloudinary.uploader
 from flask_login import login_user, logout_user, login_required
 from saleapp.admin import *
+from saleapp.models import UserRole
 
 
 @app.route("/")
@@ -76,6 +77,19 @@ def user_signout():
     return redirect(url_for('user_signin'))
 
 
+@app.route('/admin-login', methods=['post'])
+def signin_admin():
+    username = request.form['username']
+    password = request.form['password']
+
+    user = utils.check_login(username=username,
+                            password=password)
+    if user:
+        login_user(user=user)
+
+    return redirect('/admin')
+
+
 @app.context_processor
 def common_response():
     return {
@@ -132,6 +146,57 @@ def add_to_cart():
     session['cart'] = cart
 
     return jsonify(utils.cart_stats(session.get('cart')))
+
+
+@app.route('/api/update-cart', methods=['put'])
+def update_cart():
+    id = str(request.json.get('id'))
+    quantity = request.json.get('quantity')
+
+    cart = session.get('cart')
+    err_msg = ''
+    if cart:
+        if id in cart:
+            cart[id]['quantity'] = quantity
+            session['cart'] = cart
+
+            return jsonify({
+                'code': 200,
+                'data': utils.cart_stats(cart)
+            })
+        else:
+            err_msg = 'Khong co san pham tuong ung de cap nhat!'
+    else:
+        err_msg = 'Chua co gio hang!'
+
+    return jsonify({
+        'code': 404,
+        'err_msg': err_msg
+    })
+
+
+@app.route('/api/delete-cart/<product_id>', methods=['delete'])
+def delete_cart(product_id):
+    cart = session.get('cart')
+    err_msg = ''
+    if cart:
+        if product_id in cart:
+            del cart[product_id]
+            session['cart'] = cart
+
+            return jsonify({
+                'code': 200,
+                'data': utils.cart_stats(cart)
+            })
+        else:
+            err_msg = 'Khong co san pham tuong ung de cap nhat!'
+    else:
+        err_msg = 'Chua co gio hang!'
+
+    return jsonify({
+        'code': 404,
+        'err_msg': err_msg
+    })
 
 
 @app.route('/api/pay', methods=['post'])
