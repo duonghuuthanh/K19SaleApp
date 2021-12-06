@@ -24,7 +24,7 @@
           <div class="card-body">
             <h4 class="card-title">{{ p.name }}</h4>
             <p class="card-text">{{ "{:,.1f}".format(p.price) }} VND</p>
-            <a href="#" class="btn btn-danger">Dat hang</a>
+            <a href="#" class="btn btn-danger" onclick="addToCart({{ p.id }}, '{{ p.name }}', {{ p.price }})">Dat hang</a>
               <a href="#" class="btn btn-info">Chi tiet</a>
           </div>
         </div>

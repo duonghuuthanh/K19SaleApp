@@ -1,8 +1,10 @@
 import json, os
 from saleapp import app, db
-from saleapp.models import Category, Product, User
+from saleapp.models import Category, Product, User, ReceiptDetail, Receipt
 from sqlalchemy import func
+from sqlalchemy.sql import extract
 import hashlib
+from flask_login import current_user
 
 
 def read_json(path):
@@ -82,4 +84,62 @@ def cate_stats2():
         .join(Product, Product.category_id.__eq__(Category.id), isouter=True)\
         .group_by(Category.id, Category.name).all()
 
+
+def product_stats(kw=None, from_date=None, to_date=None):
+    q = db.session.query(Product.id, Product.name,
+                         func.sum(ReceiptDetail.quantity * ReceiptDetail.price))\
+                  .join(ReceiptDetail,
+                        ReceiptDetail.product_id.__eq__(Product.id), isouter=True)\
+                  .join(Receipt, Receipt.id.__eq__(ReceiptDetail.receipt_id))\
+                  .group_by(Product.id, Product.name)
+
+    if kw:
+        q = q.filter(Product.name.contains(kw))
+
+    if from_date:
+        q = q.filter(Receipt.created_date.__ge__(from_date))
+
+    if to_date:
+        q = q.filter(Receipt.created_date.__le__(to_date))
+
+    return q.all()
+
+
+def product_month_stats(year):
+    return db.session.query(extract('month', Receipt.created_date),
+                            func.sum(ReceiptDetail.quantity * ReceiptDetail.price))\
+                     .join(ReceiptDetail, ReceiptDetail.receipt_id.__eq__(Receipt.id))\
+                     .filter(extract('year', Receipt.created_date) == year)\
+                     .group_by(extract('month', Receipt.created_date))\
+                     .order_by(extract('month', Receipt.created_date))\
+                     .all()
+
+
+def cart_stats(cart):
+    total_quantity, total_amount = 0, 0
+
+    if cart:
+        for c in cart.values():
+            total_quantity += c['quantity']
+            total_amount += c['quantity'] * c['price']
+
+    return {
+        'total_quantity': total_quantity,
+        'total_amount': total_amount
+    }
+
+
+def add_receipt(cart):
+    if cart:
+        receipt = Receipt(user=current_user)
+        db.session.add(receipt)
+
+        for c in cart.values():
+            detail = ReceiptDetail(receipt=receipt,
+                                   product_id=c['id'],
+                                   quantity=c['quantity'],
+                                   price=c['price'])
+            db.session.add(detail)
+
+        db.session.commit()
 

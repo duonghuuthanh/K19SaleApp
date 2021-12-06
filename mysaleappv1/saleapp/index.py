@@ -1,6 +1,6 @@
 import math
 
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, session, jsonify
 from saleapp import app, login
 import utils
 from flask_login import login_user, logout_user
@@ -62,7 +62,7 @@ def signin():
         user = utils.check_user(username=username, password=password)
         if user:
             login_user(user=user)
-            return redirect(url_for('home'))
+            return redirect(url_for(request.args.get('next', 'home')))
         else:
             err_msg = 'Username hoac password khong chinh xac!!!'
 
@@ -78,7 +78,8 @@ def signout():
 @app.context_processor
 def common_attribute():
     return {
-        'categories': utils.load_categories()
+        'categories': utils.load_categories(),
+        'cart_stats': utils.cart_stats(session.get('cart'))
     }
 
 
@@ -112,6 +113,75 @@ def admin_login():
         login_user(user=user)
 
     return redirect('/admin')
+
+
+@app.route('/cart')
+def cart():
+    return render_template('cart.html')
+
+
+@app.route('/api/add-to-cart', methods=['post'])
+def add_to_cart():
+    data = request.json
+    id = str(data.get('id'))
+    name = data.get('name')
+    price = data.get('price')
+
+    cart = session.get('cart')
+    if not cart:
+        cart = {}
+
+    if id in cart:
+        cart[id]['quantity'] = cart[id]['quantity'] + 1
+    else:
+        cart[id] = {
+            'id': id,
+            'name': name,
+            'price': price,
+            'quantity': 1
+        }
+
+    session['cart'] = cart
+
+    return jsonify(utils.cart_stats(cart))
+
+
+@app.route('/api/update-cart', methods=['put'])
+def update_cart():
+    data = request.json
+    id = str(data.get('id'))
+    quantity = data.get('quantity')
+
+    cart = session.get('cart')
+    if cart:
+        if id in cart and quantity:
+            cart[id]['quantity'] = quantity
+            session['cart'] = cart
+
+    return jsonify(utils.cart_stats(cart))
+
+
+@app.route('/api/cart/<product_id>', methods=['delete'])
+def delete_cart(product_id):
+    cart = session.get('cart')
+    if cart:
+        if product_id in cart:
+            del cart[product_id]
+            session['cart'] = cart
+
+    return jsonify(utils.cart_stats(cart))
+
+
+@app.route('/api/pay', methods=['post'])
+def pay():
+    try:
+        utils.add_receipt(session.get('cart'))
+
+        del session['cart']
+        return jsonify({'code': 200})
+    except Exception as ex:
+        print(str(ex))
+        return jsonify({'code': 400})
 
 
 @login.user_loader

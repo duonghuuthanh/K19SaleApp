@@ -26,6 +26,7 @@ class User(BaseModel, UserMixin):
     joined_date = Column(DateTime, default=datetime.now())
     avatar = Column(String(100), default='images/default.png')
     user_role = Column(Enum(UserRole), default=UserRole.USER)
+    receipts = relationship('Receipt', backref='user', lazy=True)
 
     def __str__(self):
         return self.name
@@ -51,6 +52,21 @@ class Product(BaseModel):
     active = Column(Boolean, default=True)
     created_date = Column(DateTime, default=datetime.now())
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
+    receipt_details = relationship('ReceiptDetail', backref='product', lazy=True)
+
+
+class Receipt(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    created_date = Column(DateTime, default=datetime.now())
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    details = relationship('ReceiptDetail', backref='receipt', lazy=True)
+
+
+class ReceiptDetail(db.Model):
+    receipt_id = Column(Integer, ForeignKey(Receipt.id), nullable=False, primary_key=True)
+    product_id = Column(Integer, ForeignKey(Product.id), nullable=False, primary_key=True)
+    quantity = Column(Integer, default=0)
+    price = Column(Float, default=0)
 
 
 if __name__ == '__main__':
