@@ -2,13 +2,13 @@
     font-family: Tahoma;
 }
 
-body {
-    background-color: lightblue;
-    color: darkblue;
+h1.subject {
+    text-align:center;
 }
 
-h1.subject {
-    text-align: center;
+table.product {
+    border-collapse: collapse;
+    width: 100%;
 }
 
 .container {
@@ -16,6 +16,6 @@ h1.subject {
     margin: 0 auto;
 }
 
-table.product {
-    border-collapse: collapse;
+.flex {
+    display: flex;
 }

@@ -1,15 +1,15 @@
 {% extends 'admin/base.html' %}
 
 {% block body %}
-<h1 class="text-center text-danger">THONG KE DOANH THU</h1>
+<h1 class="text-center text-info">THONG KE DOANH THU</h1>
 
 <div class="row">
-    <div class="col-md-5 col-xs-12">
+    <div class="col-md-6 col-xs-12">
         <table class="table">
             <tr>
-                <th>Ma SP</th>
-                <th>Ten SP</th>
-                <th>Doanh thu</th>
+                <th>Ma san pham</th>
+                <th>Ten san pham</th>
+                <th>Tong doanh thu</th>
             </tr>
             {% for s in stats %}
             <tr>
@@ -26,26 +26,26 @@
             {% endfor %}
         </table>
     </div>
-    <div class="col-md-5 col-xs-12">
-        <form>
+    <div class="col-md-6 col-xs-12">
+        <form action="/admin/statsview/">
             <div class="form-group">
                 <input type="text" class="form-control" name="kw" placeholder="Nhap tu khoa..." />
             </div>
             <div class="form-group">
                 <input type="date" class="form-control" name="from_date" />
             </div>
-             <div class="form-group">
+            <div class="form-group">
                 <input type="date" class="form-control" name="to_date" />
             </div>
-            <input type="submit" value="Thong ke" class="btn btn-info" />
+            <input type="submit" value="Thong ke" class="btn btn-success" />
         </form>
 
-        <canvas id="productChartId"></canvas>
+        <canvas id="myProductChart"></canvas>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-5 col-xs-12">
+    <div class="col-md-6 col-xs-12">
         <table class="table">
             <tr>
                 <th>Thang</th>
@@ -54,22 +54,19 @@
             {% for s in month_stats %}
             <tr>
                 <td>{{ s[0] }}</td>
-                <td>{{ "{:,.1f}".format(s[1]) }} VND</td>
+                <td>
+                    {% if s[1] %}
+                    {{ "{:,.1f}".format(s[1]) }} VND
+                    {% else %}
+                    0 VND
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    <div class="col-md-5 col-xs-12">
-        <form>
-            <div class="form-group">
-                <input type="number" min="2000"
-                       name="year"
-                       class="form-control"
-                       placeholder="Nhap nam..." />
-            </div>
-            <input type="submit" value="Thong ke" class="btn btn-danger" />
-        </form>
-        <canvas id="productMonthChartId"></canvas>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="myProductMonthChart"></canvas>
     </div>
 </div>
 
@@ -82,60 +79,62 @@
     let r, g, b;
 
     {% for s in stats %}
-    {% if s[2] %}
-    labels.push('{{s[1]}}')
-    data.push({{ s[2] }})
+        {% if s[2] %}
+            labels.push('{{ s[1] }}')
+            data.push({{ s[2] }})
 
-    r = parseInt(Math.random() * 255)
-    g = parseInt(Math.random() * 255)
-    b = parseInt(Math.random() * 255)
-    colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
-    borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`)
-    {% endif %}
+            r = Math.random()*255
+            g = Math.random()*255
+            b = Math.random()*255
+
+            colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
+            borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`)
+        {% endif %}
     {% endfor %}
 
     {% for s in month_stats %}
+        {% if s[1] %}
+            labels2.push({{ s[0] }})
+            data2.push({{ s[1] }})
 
-    labels2.push({{s[0]}})
-    data2.push({{ s[1] }})
+            r = Math.random()*255
+            g = Math.random()*255
+            b = Math.random()*255
 
-    r = parseInt(Math.random() * 255)
-    g = parseInt(Math.random() * 255)
-    b = parseInt(Math.random() * 255)
-    colors2.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
-    borderColors2.push(`rgba(${r}, ${g}, ${b}, 1)`)
-
+            colors2.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
+            borderColors2.push(`rgba(${r}, ${g}, ${b}, 1)`)
+        {% endif %}
     {% endfor %}
 
     window.onload = function() {
-        const ctx = document.getElementById('productChartId').getContext('2d')
-        const ctx2 = document.getElementById('productMonthChartId').getContext('2d')
+        const ctx = document.getElementById('myProductChart').getContext('2d');
+        displayChart(ctx, 'bar', labels, data, colors, borderColors)
 
-        loadChart(ctx, labels, data, 'bar', colors, borderColors)
-        loadChart(ctx2, labels2, data2, 'line', colors2, borderColors2)
+        const ctx2 = document.getElementById('myProductMonthChart').getContext('2d');
+        displayChart(ctx2, 'line', labels2, data2, colors2, borderColors2)
     }
 
-function loadChart(ctx, labels, data, type, colors, borderColors) {
-    const myChart = new Chart(ctx, {
-        type: type,
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Thong ke doanh thu',
-                data: data,
-                backgroundColor: colors,
-                borderColor: borderColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
+    function displayChart(ctx, typeChart, labels, data, colors, borderColors) {
+        const myChart = new Chart(ctx, {
+            type: typeChart,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Thong ke doanh thu',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 </script>
 {% endblock %}

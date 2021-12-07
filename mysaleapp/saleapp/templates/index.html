@@ -6,19 +6,21 @@
 <h1 class="subject">BAN HANG TRUC TUYEN</h1>
 
 
+
+{% if products %}
+
 {% if pages > 1 %}
 <ul class="pagination">
-    {% for idx in range(1, pages+1) %}
-    <li class="page-item"><a class="page-link" href="{{ url_for('index', page=idx) }}">{{ idx }}</a></li>
+    {% for idx in range(1, pages + 1) %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('home', page=idx) }}">{{ idx }}</a></li>
     {% endfor %}
 </ul>
 {% endif %}
 
 <div class="row">
-    {% if products %}
     {% for p in products %}
-    <div class="col-md-3" style="padding:0.5rem">
-        <div class="card">
+    <div class="col-md-3 col-xs-12" style="padding:5px">
+        <div class="card" style="padding:5px">
           <img class="card-img-top" src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}">
           <div class="card-body">
             <h4 class="card-title">{{ p.name }}</h4>
@@ -28,9 +30,11 @@
         </div>
     </div>
     {% endfor %}
-    {% else %}
-    <p><i>Khong co san pham nao!!!</i></p>
-    {% endif %}
 </div>
+{% else %}
+<p><i>Khong co san pham nao!!!</i></p>
+{% endif %}
+
 
 {% endblock %}
+

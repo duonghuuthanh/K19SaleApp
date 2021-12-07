@@ -5,12 +5,12 @@
 <h1>WELCOME <span class="text-info">{{ current_user.name }}</span> TO WEBSITE!!!</h1>
 
 <div class="row">
-    <div class="col-md-5 col-xs-12">
+    <div class="col-md-6 col-xs-12">
         <table class="table">
             <tr>
-                <th>Ma DM</th>
-                <th>Ten DM</th>
-                <th>So luong SP</th>
+                <th>Ma danh muc</th>
+                <th>Ten danh muc</th>
+                <th>So luong san pham</th>
             </tr>
             {% for s in stats %}
             <tr>
@@ -21,8 +21,8 @@
             {% endfor %}
         </table>
     </div>
-    <div class="col-md-5 col-xs-12">
-        <canvas id="myCateChart"></canvas>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="myCategoryChart"></canvas>
     </div>
 </div>
 
@@ -35,19 +35,19 @@
     let r, g, b;
 
     {% for s in stats %}
-    labels.push('{{s[1]}}')
-    data.push({{ s[2] }})
+        labels.push('{{ s[1] }}')
+        data.push({{ s[2] }})
 
-    r = parseInt(Math.random() * 255)
-    g = parseInt(Math.random() * 255)
-    b = parseInt(Math.random() * 255)
-    colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
-    borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`)
+        r = Math.random()*255
+        g = Math.random()*255
+        b = Math.random()*255
+
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`)
+        borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`)
     {% endfor %}
 
     window.onload = function() {
-        const ctx = document.getElementById('myCateChart').getContext('2d')
-
+        const ctx = document.getElementById('myCategoryChart').getContext('2d');
         const myChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -70,6 +70,7 @@
         });
     }
 </script>
+
 {% else %}
 <h1 class="text-center text-danger">DANG NHAP QUAN TRI</h1>
 <form method="post" action="{{ url_for('signin_admin') }}">
